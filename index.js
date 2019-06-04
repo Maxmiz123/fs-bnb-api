@@ -9,6 +9,7 @@ app.use(express.urlencoded({ extended: false }));
 
 var users = new Array();
 var properties = new Array();
+var bookings = new Array();
 
 // app.post("/read/file", (req, res) => {
 //     fs.readFile("./data/file.json", function(err, data) {
@@ -150,4 +151,44 @@ app.get("/api/properties/:id", (req, res) => {
             return res.status(200).json({property});
         }
     }
+});
+
+app.delete("/api/properties/:id", (req, res) => {
+    var length = properties.length;
+    properties = properties.filter(property =>
+        !(property.id == parseInt(req.params.id)));
+    if (length == properties.length) {
+        res.status(400).json({status: "User doesn't exist"});
+    } else {
+        res.status(200).json({status: "user deleted"});
+    }
+    
+});
+
+app.post("/api/properties/:id/bookings", (req, res) => {
+    
+    const booking = req.body;
+    const dateFrom = booking.dateFrom;
+    const dateTo = booking.dateTo;
+    const userId = booking.userId; 
+
+    var newBooking = {
+        id: properties.length + 1,
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+        userId: userId,
+        propertyId: parseInt(req.params.id),
+        status: "NEW",
+    };
+
+    bookings.push(newBooking);
+    res.status(200).json(newBooking)
+});
+
+app.get("/api/properties/:id/bookings", (req, res) => {
+
+    var output = bookings.filter(booking => 
+        booking.propertyId == parseInt(req.params.id));
+
+    res.status(200).json(output);
 });
