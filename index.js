@@ -9,25 +9,25 @@ app.use(express.urlencoded({ extended: false }));
 
 var users = new Array();
 
-app.post("/read/file", (req, res) => {
-    fs.readFile("./data/file.json", function(err, data) {
-        if (err) {
-            return res.status(500).json({message: "Unable to open the file"});
-        }
+// app.post("/read/file", (req, res) => {
+//     fs.readFile("./data/file.json", function(err, data) {
+//         if (err) {
+//             return res.status(500).json({message: "Unable to open the file"});
+//         }
 
-        var jsonFromString = JSON.parse(data);
+//         var jsonFromString = JSON.parse(data);
 
-        jsonFromString.users.push({id: 1});
+//         jsonFromString.users.push({id: 1});
 
-        fs.writeFile("./data/file.json", JSON.stringify(jsonFromString), function(err) {
-            if (err) {
-                return res.status(500).json({message: "Unable to write the file"});
-            }
+//         fs.writeFile("./data/file.json", JSON.stringify(jsonFromString), function(err) {
+//             if (err) {
+//                 return res.status(500).json({message: "Unable to write the file"});
+//             }
 
-            return res.status(200).json(jsonFromString);
-        });
-    });
-});
+//             return res.status(200).json(jsonFromString);
+//         });
+//     });
+// });
 
 app.get("/api/users/:id", (req, res) => {
     const userId = req.params.id;
@@ -60,11 +60,19 @@ app.post("/api/users", (req, res) => {
 
     var errors = [];
     if (!bodyFirstname) {
-        errors.push({message: "Invalid firstname"});
+        errors.push({message: "Invalid request: Firstname is required"});
+    }
+
+    if (!bodyLastname) {
+        errors.push({message: "Invalid request: Lastname is required"});
+    }
+
+    if (!bodyPassword) {
+        errors.push({message: "Invalid request: Password is required"});
     }
 
     if (!bodyEmail) {
-        errors.push({message: "Invalid firstname"});
+        errors.push({message: "Invalid request: Email is required"});
     }
 
     if (errors.length > 0) {
@@ -74,7 +82,7 @@ app.post("/api/users", (req, res) => {
     for (var k = 0; k < users.length; k++) {
         const aUser = users[k];
         if (aUser.email === bodyEmail) {
-            return res.status(400).json({message: "User exists with that email"});
+            return res.status(400).json({message: "Invalid Request: User exists with that email"});
         }
     }
 
@@ -91,14 +99,43 @@ app.post("/api/users", (req, res) => {
 });
 
 app.post("/api/auth", (req, res) => {
-    res.send("POST Auth api");
-});
+    const user = req.body;
+    const bodyEmail = user.email;
+    const bodyPassword = user.password;
 
-const PropertyRouter = express.Router();
-PropertyRouter.post("/api/properties", (req, res) => {
-    res.send("POST Properties api");
+    for (var k = 0; k < users.length; k++) {
+        const aUser = users[k];
+        if (aUser.email === bodyEmail && aUser.password === bodyPassword) {
+            return res.status(200).json({aUser});
+        }
+
+    res.send("POST Auth api");
+}});
+
+// const PropertyRouter = express.Router();
+app.post("/api/properties", (req, res) => {
+    
+    const property = req.body;
+    const propertyName = property.propertyName;
+    const propertyLocation = property.propertyLocation;
+    const propertyImage = property.propertyImage;
+    const propertyPrice = property.propertyPrice; 
+
+    var newProperty = {
+        id: users.length + 1,
+        name: propertyName,
+        location: propertyLocation,
+        image_url: propertyImage,
+        price: propertyPrice
+    };
+
+    users.push(newProperty);
+    res.json(newProperty);
+
+
+    // res.send("POST Properties api");
 });
-app.use("/parent", PropertyRouter);
+// app.use("/parent", PropertyRouter);
 
 app.listen(3000, () => {
     console.log("Server is running");
