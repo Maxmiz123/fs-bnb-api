@@ -8,6 +8,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 var users = new Array();
+var properties = new Array();
 
 // app.post("/read/file", (req, res) => {
 //     fs.readFile("./data/file.json", function(err, data) {
@@ -122,14 +123,14 @@ app.post("/api/properties", (req, res) => {
     const propertyPrice = property.propertyPrice; 
 
     var newProperty = {
-        id: users.length + 1,
+        id: properties.length + 1,
         name: propertyName,
         location: propertyLocation,
         image_url: propertyImage,
         price: propertyPrice
     };
 
-    users.push(newProperty);
+    properties.push(newProperty);
     res.json(newProperty);
 
 
@@ -139,4 +140,14 @@ app.post("/api/properties", (req, res) => {
 
 app.listen(3000, () => {
     console.log("Server is running");
+});
+
+app.get("/api/properties/:id", (req, res) => {
+
+    for (var k = 0; k < properties.length; k++) {
+        const property = properties[k];
+        if (property.id === parseInt(req.params.id)) {
+            return res.status(200).json({property});
+        }
+    }
 });
